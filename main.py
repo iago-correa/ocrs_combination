@@ -60,10 +60,13 @@ def combine_ocrs(img, ocrs, comb, seg=0, metrics=False, text=None, mode='w'):
         segments_folder = segmenta_imagem(img, seg, img_name)
         segments = os.listdir(segments_folder)
         segments.sort()
+        file_n = 1
         for segment in segments:
+            print(str(file_n) + '/' + str(len(segments)) + ':' + segment)
             if(segment[-3:] == 'png' or segment[-3:] == 'jpg'):
                 img_file = segments_folder + segment
                 combine_ocrs(img=img_file, ocrs=ocrs, comb=comb, mode='a')
+            file_n += 1
 
         output_subdir = segments_folder.split('/')[-2]
         combined_texts = []
@@ -77,7 +80,7 @@ def combine_ocrs(img, ocrs, comb, seg=0, metrics=False, text=None, mode='w'):
             if(text is not None):
                 results = []
                 for method, combined_text in combined_texts:
-                    result = calcula_metricas(combined_text, text, img_name, method)
+                    result = calcula_metricas(combined_text, text, img_name, method, ocrs)
                     results.append(result)
                     output.append([method, combined_text, result[1], result[2], result[3], result[4], result[5]])
                 return output
@@ -100,7 +103,7 @@ def combine_ocrs(img, ocrs, comb, seg=0, metrics=False, text=None, mode='w'):
             if(text is not None):
                 results = []
                 for method, combined_text in combined_texts:
-                    result = calcula_metricas(combined_text, text, img_name, method)
+                    result = calcula_metricas(combined_text, text, img_name, method, ocrs)
                     results.append(result)
                     output.append([method, combined_text, result[1], result[2], result[3], result[4], result[5]])
                 return output
@@ -151,7 +154,7 @@ def segmenta_imagem(img, seg, img_name):
     return dir_path
 
 
-def calcula_metricas(combined_text, text, img, method):
+def calcula_metricas(combined_text, text, img, method, ocrs):
 
     import os
     from isri_evaluation import char_acc_evaluation, word_acc_evaluation, editop_evaluation
@@ -167,9 +170,9 @@ def calcula_metricas(combined_text, text, img, method):
     file.write(text)
     file.close()
 
-    char_acc = char_acc_evaluation(temp_out_filename, temp_annotation_filename, img, method)
-    word_acc = word_acc_evaluation(temp_out_filename, temp_annotation_filename, img, method)
-    inserts, delets, subs = editop_evaluation(temp_out_filename, temp_annotation_filename, img, method)
+    char_acc = char_acc_evaluation(temp_out_filename, temp_annotation_filename, img, method + '_' + '_'.join(ocrs))
+    word_acc = word_acc_evaluation(temp_out_filename, temp_annotation_filename, img, method + '_' + '_'.join(ocrs))
+    inserts, delets, subs = editop_evaluation(temp_out_filename, temp_annotation_filename, img, method + '_' + '_'.join(ocrs))
 
     metrics = [method, char_acc, word_acc, inserts, delets, subs]
 
@@ -218,7 +221,7 @@ def combina_textos(text_data, combs, img_name, mode):
                 word_confidences.append(mean(i))
             wei_median_out = median(texts, word_confidences)
             combined_texts.append(['wei_median_string', wei_median_out])
-            escreve_saida_txt(wei_median_out, comb, img_name)
+            escreve_saida_txt(wei_median_out, comb, img_name, mode)
 
     return combined_texts
         
@@ -265,18 +268,30 @@ def escreve_saida_txt(text, comb_name, img_name, mode = 'w'):
 
 def main():
     
-    seg_img = 'test_seg.png'
-    test_seg_annotation = 'Receipt No: 1670327566'
+    # seg_img = 'test_seg.png'
+    # test_seg_annotation = 'Receipt No: 1670327566'
     
-    full_img = 'test.png'
-    test_annotation = 'This is a lot of 12 point text to test the\nocr code and see if it works on all types\nof file format.\nThe quick brown dog jumped over the\nlazy fox. The quick brown dog jumped\nover the lazy fox. The quick brown dog\njumped over the lazy fox. The quick\nbrown dog jumped over the lazy fox.\n'
+    # full_img = 'test.png'
+    # test_annotation = 'This is a lot of 12 point text to test the\nocr code and see if it works on all types\nof file format.\nThe quick brown dog jumped over the\nlazy fox. The quick brown dog jumped\nover the lazy fox. The quick brown dog\njumped over the lazy fox. The quick\nbrown dog jumped over the lazy fox.\n'
 
-    ocrs = ['tesseract4-psm10', 'tesseract5-psm6', 'kraken']
-    comb = ['align_rank', 'median_string']
+    full_img = 'sample.jpg'
+    annotations_file = 'annotations_sample.txt'
+    with open(annotations_file) as f:
+        lines = f.readlines()
+    test_annotation = ''.join(lines)
 
-    out = combine_ocrs(img=seg_img, ocrs=ocrs, comb=comb, seg=2, text=test_seg_annotation, metrics = True)
+    ocrs = ['tesseract4-psm10', 'tesseract5-psm10', 'calamari']
+    comb = ['align_rank', 'median_string', 'wei_median_string']
 
-    print(out)
+    out = combine_ocrs(img=full_img, ocrs=ocrs, comb=comb, seg=1, text=test_annotation, metrics = True)
+
+    for comb in out:
+        print('Combinação:\t\t\t' + str(comb[0]))
+        print('Acurácia de caractere:\t\t' + str(comb[2]))
+        print('Acurácia de palavra:\t\t' + str(comb[3]))
+        print('Número de inserções:\t\t' + str(comb[4]))
+        print('Número de remoções:\t\t' + str(comb[5]))
+        print('Número de substituições:\t' + str(comb[6]))
 
 
 if __name__ == "__main__":

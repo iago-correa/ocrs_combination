@@ -99,7 +99,7 @@ def run_ocropus(img, mode):
     if(p == i):
         p = str(pathlib.Path().absolute())
     else:
-        '/'.join(p.split('/')[:-1]) + '/'
+        p = '/'.join(p.split('/')[:-1]) + '/'
 
     if mode != 'a':
         output_folder = output_path + i + '/'
@@ -163,7 +163,7 @@ def run_calamari(img, mode):
     if(p == i):
         p = str(pathlib.Path().absolute())
     else:
-        '/'.join(p.split('/')[:-1]) + '/'
+        p = '/'.join(p.split('/')[:-1]) + '/'
 
     if mode != 'a':
         output_folder = output_path + i + '/'
@@ -173,6 +173,7 @@ def run_calamari(img, mode):
         output_folder = output_path + img.split('/')[-2] + '/'
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
+
     # Binarize
     command = 'ocropus-nlbin -n ' + img
 
@@ -185,9 +186,15 @@ def run_calamari(img, mode):
         create_empty.append(i)
     else:
 
-        for j in os.listdir(p):
-            if(j[-8:] == '.bin.png' or j[-8:] ==  '.nrm.png'):
-                os.rename(str(p) + '/' + j, output_folder + j)
+        if mode != 'a':
+            for j in os.listdir(p):
+                if(j[-8:] == '.bin.png' or j[-8:] ==  '.nrm.png'):
+                    os.rename(str(p) + '/' + j, output_folder + j)
+        else:
+            import shutil
+            shutil.copyfile(str(p) + '/' + str(i) + '.bin.png', output_folder + str(i) + '.bin.png')
+            shutil.copyfile(str(p) + '/' + str(i) + '.nrm.png', output_folder + str(i) + '.nrm.png')
+
 
         # Recognition
         command = 'calamari-predict --checkpoint antiqua_modern/4.ckpt.json --files ' + output_folder + '*.bin.png --batch_size=20 --extended_prediction_data'
@@ -227,7 +234,7 @@ def run_tesseract(img, version, psm, mode):
     if(p == i):
         p = str(pathlib.Path().absolute())
     else:
-        '/'.join(p.split('/')[:-1]) + '/'
+        p = '/'.join(p.split('/')[:-1]) + '/'
 
     if mode != 'a':
         output_folder = output_path + i + '/'

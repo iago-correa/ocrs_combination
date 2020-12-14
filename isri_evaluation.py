@@ -22,7 +22,7 @@ def char_acc_evaluation(prediction_file, gt_file, db_name, ocr_name):
 
     char_acc = float(out.split('\n')[4].split('%')[0])
 
-    return char_acc
+    return abs(char_acc)
 
 
 def sum_char_acc(db_name, ocr_name):
@@ -49,7 +49,7 @@ def sum_char_acc(db_name, ocr_name):
 
     char_acc = float(out.split('\n')[4].split('%')[0])
 
-    return char_acc
+    return abs(char_acc)
     
 
 def word_acc_evaluation(prediction_file, gt_file, db_name, ocr_name):
@@ -74,7 +74,7 @@ def word_acc_evaluation(prediction_file, gt_file, db_name, ocr_name):
 
     word_acc = float(out.split('\n')[4].split('%')[0])
 
-    return word_acc
+    return abs(word_acc)
 
 
 def sum_word_acc(db_name, ocr_name):
@@ -101,7 +101,7 @@ def sum_word_acc(db_name, ocr_name):
 
     word_acc = float(out.split('\n')[4].split('%')[0])
 
-    return word_acc
+    return abs(word_acc)
 
 
 def editop_evaluation(prediction_file, gt_file, db_name, ocr_name):
