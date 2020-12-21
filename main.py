@@ -293,6 +293,5 @@ def main():
         print('Número de remoções:\t\t' + str(comb[5]))
         print('Número de substituições:\t' + str(comb[6]))
 
-
 if __name__ == "__main__":
     main()

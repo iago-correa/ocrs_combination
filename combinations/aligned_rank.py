@@ -54,10 +54,12 @@ def aligned_ranking(strings_lists, weights_lists):
         unique_values = list(set(choice))
         acc_weights = [0] * len(unique_values)
         
-        for unique_value, acc_weight in zip(unique_values, acc_weights):
+        index = 0
+        for unique_value in unique_values:
             for char, w in zip(choice, weights):
                 if(char == unique_value):
-                    acc_weight += w
+                    acc_weights[index] += w
+            index += 1
 
         biggest_frequency = max(acc_weights)
         most_voted = []
